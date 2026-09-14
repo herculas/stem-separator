@@ -1,0 +1,30 @@
+# Local runtime and caches
+.venv/
+.work/
+**/__pycache__/
+*.py[cod]
+
+# Machine-specific configuration
+config/local.psd1
+
+# Generated audio and analysis results
+outputs/
+*.wav
+*.flac
+*.m4a
+*.mp3
+*.aac
+*.ogg
+
+# Downloaded model weights; keep YAML configs and manifests
+models/**/*.ckpt
+models/**/*.pth
+models/**/*.pt
+models/**/*.onnx
+models/**/*.safetensors
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

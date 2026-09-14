@@ -1,0 +1,42 @@
+{
+  "source_catalog": "https://huggingface.co/noblebarkrr/mvsepless_resources/blob/main/models.json",
+  "model_release": "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/tag/v1.0.21",
+  "models": [
+    {
+      "target": "bowed_strings",
+      "checkpoint": "bs_mega_53stem_bowed_strings_mvsep.ckpt",
+      "bytes": 77622628,
+      "sha256": "598a644d78dd6a385140b2134733eef42d9525805a84d55f224c80a1ca39ff61"
+    },
+    {
+      "target": "brass",
+      "checkpoint": "bs_mega_53stem_brass_mvsep.ckpt",
+      "bytes": 77616988,
+      "sha256": "e7d7bf86a031f3253019ff9dc424485d8085946fc428ab66522c568ee17b8027"
+    },
+    {
+      "target": "woodwind",
+      "checkpoint": "bs_mega_53stem_woodwind_mvsep.ckpt",
+      "bytes": 77619103,
+      "sha256": "9a1335d2cd21cd4fdd6964e7ab96c9e9776b2643644f763e2f59bb6c53d39060"
+    },
+    {
+      "target": "synth",
+      "checkpoint": "bs_mega_53stem_synth_mvsep.ckpt",
+      "bytes": 77616988,
+      "sha256": "04749df7e2fab770a0d26bf9aa4850c1a6cd89547fc8bfe9c9d223602c0afb82"
+    },
+    {
+      "target": "keys",
+      "checkpoint": "bs_mega_53stem_keys_mvsep.ckpt",
+      "bytes": 77616219,
+      "sha256": "4bc2bde8c5b26d5e22720304deace45dfeaffb2d02dc07922a8f2be17d82c844"
+    },
+    {
+      "target": "percussion",
+      "checkpoint": "bs_mega_53stem_percussion_mvsep.ckpt",
+      "bytes": 77620513,
+      "sha256": "82187665185d51e6050b4d6afaf45e7acafd85d1eefffd86c47ac0aa601e089f"
+    }
+  ]
+}
