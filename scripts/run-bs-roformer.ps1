@@ -20,7 +20,6 @@ $env:PYTHONUTF8 = '1'
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $python = Join-Path $projectRoot '.venv\Scripts\python.exe'
-$infer = Join-Path $projectRoot '.venv\Scripts\bs-roformer-infer.exe'
 $modelsDir = Join-Path $projectRoot 'models'
 $workRoot = Join-Path $projectRoot '.work\bs-roformer'
 $localConfigPath = Join-Path $projectRoot 'config\local.psd1'
@@ -32,10 +31,6 @@ if (-not $OutputRoot) {
 if (-not (Test-Path -LiteralPath $python -PathType Leaf)) {
     throw "Python environment not found: $python"
 }
-if (-not (Test-Path -LiteralPath $infer -PathType Leaf)) {
-    throw "BS-RoFormer executable not found: $infer"
-}
-
 if ($PSCmdlet.ParameterSetName -eq 'Library') {
     if (-not (Test-Path -LiteralPath $localConfigPath -PathType Leaf)) {
         throw "Local music-library config not found: $localConfigPath. Copy config/local.example.psd1 to config/local.psd1."
@@ -73,7 +68,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Separating on CUDA: $trackName"
-& $infer `
+& $python -c 'from bs_roformer.inference import main; main()' `
     --model 'roformer-model-bs-roformer-sw-by-jarredou' `
     --models_dir $modelsDir `
     --input_folder $workDir `
