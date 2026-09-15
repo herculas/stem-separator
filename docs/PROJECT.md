@@ -9,6 +9,15 @@
 主流程始终直接处理原始音频，不对既有 stem 反复分离。这样可以避免多轮掩码估计
 累积伪影。原始音乐库位于项目外部，项目只保存代码、模型配置和生成结果。
 
+## 代码布局
+
+全部可执行代码统一位于 `src/`：
+
+- `src/run_bs_roformer.py`：跨平台 6-stem 主流程。
+- `src/other_refinement/`：已归档的 53-stem 实验。
+
+音乐源不属于项目目录。脚本只读取显式传入或 `config/local.toml` 指向的外部音频。
+
 ## 已验证环境
 
 - Windows
@@ -19,9 +28,15 @@
 - `imageio-ffmpeg 0.6.0`
 - BS-RoFormer-SW checkpoint：`BS-Rofo-SW-Fixed.ckpt`
 
+主流程已在上述 Windows + CUDA 环境完成端到端测试。macOS 交接步骤见
+`docs/MAC_HANDOFF.md`；Apple Silicon MPS 尚待在目标机器上验证。
+
 ## 安装
 
-在项目根目录创建并激活虚拟环境，然后安装 CUDA 版 PyTorch：
+在项目根目录创建虚拟环境。虚拟环境包含平台和绝对路径信息，换机器或操作系统时
+必须重建，不能直接复制。
+
+Windows + NVIDIA CUDA：
 
 ```powershell
 python -m venv .venv
@@ -30,19 +45,21 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
+macOS：
+
+```shell
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
+
 第一次运行主脚本时，`bs-roformer-infer` 会将 6-stem 模型下载到 `models/`。
 模型 checkpoint 不由 Git 跟踪。
 
 ## 输入与输出
 
-本机配置 `config/local.psd1` 指向：
-
-```text
-D:\Music\Xenoblade Chronicles 1 Definitive Edition
-```
-
-该专辑包含 99 个 `.m4a` 文件。文件名已依据标题元数据修复，并保留
-`碟号_轨号_标题.m4a` 结构；Windows 不允许的 `/` 使用全角 `／`。
+可直接通过 `--input-file` 传入项目外部音频。可选的本机配置为
+`config/local.toml`；它从 `config/local.example.toml` 复制而来，不进入 Git。
 
 输出位于 `outputs/6-stem/<曲名>/`。每首正常包含六个模型 stem 和一个便捷的
 `instrumental`，格式为 44.1kHz、双声道、32-bit float WAV。
@@ -65,7 +82,7 @@ D:\Music\Xenoblade Chronicles 1 Definitive Edition
 
 Git 跟踪：
 
-- PowerShell/Python 脚本
+- `src/` 下的 Python 代码
 - Markdown 文档
 - 依赖清单
 - 模型 YAML 与来源/哈希 manifest
@@ -76,5 +93,5 @@ Git 忽略：
 - `.venv/` 与 `.work/`
 - `outputs/` 下的所有分轨结果
 - checkpoint 等大型模型权重
-- `config/local.psd1`
+- `config/local.toml`
 - 常见音频文件，避免误将原始音乐加入仓库

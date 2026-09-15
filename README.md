@@ -1,58 +1,57 @@
 # Sonic
 
-Windows 本地音乐分轨与分析工作区。目前的主流程是使用
-**BS-RoFormer-SW 6-stem** 将音乐拆分为：
+跨平台的本地音乐分轨与分析工作区。当前主流程使用 **BS-RoFormer-SW
+6-stem**，生成 `bass`、`drums`、`guitar`、`piano`、`vocals`、`other`
+以及便于试听的 `instrumental`。
 
-- `bass`
-- `drums`
-- `guitar`
-- `piano`
-- `vocals`
-- `other`
-- `instrumental`（便于试听的附加轨）
-
-53-stem 精细化方案已经试验过，但当前听感收益有限，因此已归档到
-`experiments/other-refinement/`，不属于日常流程。
+所有可执行代码统一位于 `src/`。53-stem 精细化方案保留在
+`src/other_refinement/`，但由于串音与误分类较明显，不属于日常流程。
 
 ## 快速开始
 
-默认音乐库配置位于 `config/local.psd1`。当前默认专辑为：
+Python 3.12 环境安装：
 
-```text
-D:\Music\Xenoblade Chronicles 1 Definitive Edition
+```shell
+python3 -m venv .venv
+source .venv/bin/activate  # macOS/Linux
+python -m pip install -r requirements.txt
 ```
 
-按默认音乐库中的文件名运行：
+Windows PowerShell 中将激活命令替换为 `.\.venv\Scripts\Activate.ps1`。
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\run-bs-roformer.ps1 `
-  -Track '01_01_メインテーマ.m4a'
+激活虚拟环境后直接传入项目外部的音乐文件：
+
+```shell
+python src/run_bs_roformer.py --input-file "/path/to/track.flac"
 ```
 
-也可以直接传入任意音乐文件的完整路径：
+Apple Silicon 可显式尝试 `--device mps`，NVIDIA 环境可使用
+`--device cuda`；默认 `--device auto` 交由依赖库选择设备。
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\run-bs-roformer.ps1 `
-  -InputFile 'D:\Music\其他专辑\track.flac'
+若经常使用同一音乐库，可复制 `config/local.example.toml` 为
+`config/local.toml`，随后按文件名运行：
+
+```shell
+python src/run_bs_roformer.py --track "track.flac"
 ```
 
-输出默认写入 `outputs/6-stem/<曲名>/`，原始音乐不会被修改。中间 WAV
-在成功完成后自动删除。
+输出默认写入 `outputs/6-stem/<曲名>/`。原始音乐不会被修改，中间 WAV
+会在成功完成后自动删除。
 
 ## 目录
 
 ```text
 sonic/
-├── config/                         本机音乐库配置
-├── docs/                           环境、流程与历史说明
-├── experiments/                    非主流程实验
+├── src/                            全部可执行代码
+│   ├── run_bs_roformer.py          当前 6-stem 主流程
+│   └── other_refinement/           已归档的 53-stem 实验代码
+├── config/                         跨平台本机配置模板
+├── docs/                           项目说明、实验记录与交接文档
 ├── models/                         模型配置与本地权重
-├── outputs/                        所有生成结果（Git 忽略）
-│   ├── 6-stem/                     当前主流程结果
-│   └── experiments/                历史实验结果
-├── scripts/                        当前主流程脚本
-├── .venv/                          Python 虚拟环境（Git 忽略）
-└── .work/                          解码缓存与临时文件（Git 忽略）
+├── outputs/                        生成结果（Git 忽略）
+├── .venv/                          本机 Python 环境（Git 忽略）
+└── .work/                          解码缓存（Git 忽略）
 ```
 
-环境安装、模型行为及验证记录见 [项目文档](docs/PROJECT.md)。
+环境与行为说明见 [项目文档](docs/PROJECT.md)，迁移至 macOS 前请阅读
+[Mac 交接说明](docs/MAC_HANDOFF.md)。

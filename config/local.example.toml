@@ -1,0 +1,3 @@
+# Copy this file to local.toml and adjust it for the current machine.
+music_root = "/Users/your-name/Music"
+default_collection = "Album Name"
