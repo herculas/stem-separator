@@ -15,7 +15,9 @@ installed packages, and `uv pip check` passed.
 
 The [development guide](../operations/polyu-development.md) owns the current
 runtime procedure. The checkpoint and fixtures are isolated in the PolyU run
-archive under `.work/archive/runtime/linux-bootstrap/2026-11-07/`. The standard
-model directory still needs an approved checkpoint for an operational run.
+archive under `.work/archive/runtime/linux-bootstrap/2026-11-07/`. At bootstrap
+closeout the checkpoint was present only in the archive. The
+[separation guide](../operations/separation.md#checkpoint-and-output) records
+its subsequent deployment to the standard model directory.
 The tests used synthetic audio. The full MSST experiment and real-music quality
 assessment remain outside this validation.

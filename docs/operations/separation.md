@@ -41,6 +41,13 @@ against the [upstream release record](https://pypi.org/project/bs-roformer-infer
 Apply the same checks when placing an existing copy. The published checkpoint
 size is 699,412,152 bytes.
 
+On 2026-11-07, PolyU deployed a verified copy from the
+[Linux validation archive](../history/linux-runtime-validation-2026-11-07.md).
+The CUDA runner loaded the checkpoint from the default model directory and
+produced all seven WAVs from synthetic audio with IPv4 and IPv6 socket creation
+blocked. The PolyU run record is under
+`.work/archive/runtime/local-checkpoint/2026-11-07/`.
+
 `--device cuda` selects the NVIDIA GPU. The default `auto` delegates device
 selection to the inference package. The CLI also accepts `cpu` and `mps`.
 FFmpeg decodes to 44.1 kHz stereo. Decodes live under `.work/bs-roformer/` and
