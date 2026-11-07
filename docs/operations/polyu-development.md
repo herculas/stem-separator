@@ -57,10 +57,9 @@ the package source and local storage controls.
 Keep the base interpreter under `.runtime/python/`, installed dependencies in
 `.runtime/venv/`, and package and compiler caches under `.runtime/cache/`.
 The active virtual environment was rebuilt in place at its new path using the
-existing `uv` cache and dependency lock. The previous root-level environment is
-preserved at `.runtime/retired/venv-2026-11-08/` as a rollback copy. Its launchers
-still use the original path. A rollback requires an authorized restoration to
-that path and runtime validation before use.
+existing `uv` cache and dependency lock. For recovery, use the provisioning
+commands above to rebuild the environment at `.runtime/venv/`, then run the
+validation checks below.
 
 ## Validate the environment
 
