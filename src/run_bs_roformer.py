@@ -1,10 +1,11 @@
-"""Cross-platform BS-RoFormer six-stem runner for the Sonic workspace."""
+"""Cross-platform BS-RoFormer six-stem runner for StemSeparator."""
 
 from __future__ import annotations
 
 import argparse
 import subprocess
 import sys
+import tempfile
 import tomllib
 from pathlib import Path
 from typing import Any
@@ -49,10 +50,10 @@ def resolve_source(args: argparse.Namespace) -> Path:
         config = load_local_config()
         music_root = args.music_root or config.get("music_root")
         collection = args.collection or config.get("default_collection")
-        if not music_root or not collection:
-            raise ValueError(
-                "--track requires --music-root and --collection, or config/local.toml"
-            )
+        if not isinstance(music_root, (Path, str)) or not str(music_root).strip():
+            raise ValueError("--track requires --music-root or a music_root string in config/local.toml")
+        if not isinstance(collection, str) or not collection.strip():
+            raise ValueError("--track requires --collection or a default_collection string in config/local.toml")
         source = Path(music_root).expanduser() / collection / args.track
 
     source = source.resolve()
@@ -64,13 +65,14 @@ def resolve_source(args: argparse.Namespace) -> Path:
 def run(args: argparse.Namespace) -> Path:
     source = resolve_source(args)
     models_dir = PROJECT_ROOT / "models"
-    work_dir = PROJECT_ROOT / ".work" / "bs-roformer" / source.stem
-    decoded_wav = work_dir / f"{source.stem}.wav"
-    output_root = (args.output_root or PROJECT_ROOT / "outputs" / "6-stem").resolve()
+    output_root = (args.output_root or PROJECT_ROOT / "outputs" / "6-stem").expanduser().resolve()
     track_output = output_root / source.stem
+    track_output.mkdir(parents=True)
 
-    for directory in (models_dir, work_dir, track_output):
-        directory.mkdir(parents=True, exist_ok=True)
+    work_root = PROJECT_ROOT / ".work" / "bs-roformer"
+    work_root.mkdir(parents=True, exist_ok=True)
+    work_dir = Path(tempfile.mkdtemp(dir=work_root))
+    decoded_wav = work_dir / f"{source.stem}.wav"
 
     ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
     print(f"Decoding: {source}", flush=True)
@@ -80,7 +82,7 @@ def run(args: argparse.Namespace) -> Path:
             "-hide_banner",
             "-loglevel",
             "error",
-            "-y",
+            "-n",
             "-i",
             str(source),
             "-vn",
@@ -116,7 +118,8 @@ def run(args: argparse.Namespace) -> Path:
     subprocess.run(command, cwd=PROJECT_ROOT, check=True)
 
     if not args.keep_decoded_wav:
-        decoded_wav.unlink(missing_ok=True)
+        decoded_wav.unlink()
+        work_dir.rmdir()
 
     print(f"Completed: {track_output}")
     return track_output
@@ -125,7 +128,7 @@ def run(args: argparse.Namespace) -> Path:
 def main() -> None:
     try:
         run(parse_args())
-    except (FileNotFoundError, ValueError, subprocess.CalledProcessError) as error:
+    except (OSError, ValueError, subprocess.CalledProcessError) as error:
         raise SystemExit(f"error: {error}") from error
 
 

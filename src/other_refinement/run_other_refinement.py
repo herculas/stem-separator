@@ -6,6 +6,7 @@ import argparse
 import os
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import imageio_ffmpeg
@@ -24,7 +25,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--targets", nargs="+", choices=TARGETS, default=list(TARGETS))
     parser.add_argument("--device-ids", nargs="+", default=["0"])
     parser.add_argument("--keep-decoded-wav", action="store_true")
-    return parser.parse_args()
+    args = parser.parse_args()
+    if len(args.targets) != len(set(args.targets)):
+        parser.error("--targets must be distinct")
+    return args
 
 
 def run(args: argparse.Namespace) -> Path:
@@ -34,23 +38,39 @@ def run(args: argparse.Namespace) -> Path:
 
     output_root = (
         args.output_root or PROJECT_ROOT / "outputs" / "experiments" / "other-refinement"
-    ).resolve()
-    existing_root = (args.existing_stems_root or PROJECT_ROOT / "outputs" / "6-stem").resolve()
+    ).expanduser().resolve()
+    existing_root = (
+        args.existing_stems_root or PROJECT_ROOT / "outputs" / "6-stem"
+    ).expanduser().resolve()
     existing_other = existing_root / source.stem / f"{source.stem}_other.wav"
     if not existing_other.is_file():
         raise FileNotFoundError(
             f"existing six-stem other track not found: {existing_other}"
         )
 
-    work_dir = PROJECT_ROOT / ".work" / "experiments" / "other-refinement" / source.stem
-    decoded_wav = work_dir / f"{source.stem}.wav"
+    assets = []
+    for target in args.targets:
+        model_base = f"bs_mega_53stem_{target}_mvsep"
+        config = MODEL_ROOT / f"{model_base}.yaml"
+        checkpoint = MODEL_ROOT / f"{model_base}.ckpt"
+        for asset in (config, checkpoint):
+            if not asset.is_file():
+                raise FileNotFoundError(asset)
+        assets.append((target, config, checkpoint))
+
     track_output = output_root / source.stem
+    track_output.mkdir(parents=True)
     raw_output = track_output / "raw_candidates"
+    raw_output.mkdir()
     consistent_output = track_output / "consistent_stems"
     partition_script = Path(__file__).with_name("partition_other.py")
+
+    work_root = PROJECT_ROOT / ".work" / "experiments" / "other-refinement"
+    work_root.mkdir(parents=True, exist_ok=True)
+    work_dir = Path(tempfile.mkdtemp(dir=work_root))
+    decoded_wav = work_dir / f"{source.stem}.wav"
     mpl_config = PROJECT_ROOT / ".work" / "matplotlib"
-    for directory in (work_dir, raw_output, consistent_output, mpl_config):
-        directory.mkdir(parents=True, exist_ok=True)
+    mpl_config.mkdir(parents=True, exist_ok=True)
 
     environment = os.environ.copy()
     environment["MPLCONFIGDIR"] = str(mpl_config)
@@ -62,7 +82,7 @@ def run(args: argparse.Namespace) -> Path:
             "-hide_banner",
             "-loglevel",
             "error",
-            "-y",
+            "-n",
             "-i",
             str(source),
             "-vn",
@@ -79,14 +99,7 @@ def run(args: argparse.Namespace) -> Path:
         check=True,
     )
 
-    for target in args.targets:
-        model_base = f"bs_mega_53stem_{target}_mvsep"
-        config = MODEL_ROOT / f"{model_base}.yaml"
-        checkpoint = MODEL_ROOT / f"{model_base}.ckpt"
-        for asset in (config, checkpoint):
-            if not asset.is_file():
-                raise FileNotFoundError(asset)
-
+    for target, config, checkpoint in assets:
         print(f"Separating candidate: {target}", flush=True)
         subprocess.run(
             [
@@ -136,7 +149,8 @@ def run(args: argparse.Namespace) -> Path:
     )
 
     if not args.keep_decoded_wav:
-        decoded_wav.unlink(missing_ok=True)
+        decoded_wav.unlink()
+        work_dir.rmdir()
     print(f"Completed: {track_output}")
     return track_output
 
@@ -144,7 +158,7 @@ def run(args: argparse.Namespace) -> Path:
 def main() -> None:
     try:
         run(parse_args())
-    except (FileNotFoundError, subprocess.CalledProcessError) as error:
+    except (OSError, subprocess.CalledProcessError) as error:
         raise SystemExit(f"error: {error}") from error
 
 

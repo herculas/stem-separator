@@ -34,10 +34,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--targets", nargs="+", default=list(DEFAULT_TARGETS))
     parser.add_argument("--chunk-seconds", type=float, default=20.0)
     parser.add_argument("--context-seconds", type=float, default=2.0)
-    return parser.parse_args()
+    args = parser.parse_args()
+    if len(args.targets) != len(set(args.targets)):
+        parser.error("--targets must be distinct")
+    if any(not target or "/" in target or "\\" in target for target in args.targets):
+        parser.error("--targets must be filenames without directory separators")
+    if "unclassified_other" in args.targets:
+        parser.error("unclassified_other is reserved for the residual")
+    return args
 
 
-def audio_info(path: Path) -> sf.SoundFile:
+def audio_info(path: Path):
     if not path.is_file():
         raise FileNotFoundError(path)
     return sf.info(path)
@@ -92,7 +99,7 @@ def main() -> None:
         ):
             raise ValueError(f"Audio format mismatch for {target}: {info}")
 
-    args.output_dir.mkdir(parents=True, exist_ok=True)
+    args.output_dir.mkdir(parents=True)
     output_paths = {target: args.output_dir / f"{target}.wav" for target in args.targets}
     output_paths["unclassified_other"] = args.output_dir / "unclassified_other.wav"
 
