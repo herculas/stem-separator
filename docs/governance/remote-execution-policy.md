@@ -1,10 +1,10 @@
-# PolyU 远程操作政策
+# PolyU remote execution policy
 
-## SSH
+## SSH boundary
 
-使用 VPS 已配置的 SSH 别名和已登记的主机密钥。别名和项目绝对路径分别保存在
-VPS 工作树的 `stemseparator.sshHost` 和 `stemseparator.remoteRoot` 本地 Git 配置中。
-在 VPS 项目根目录可执行只读连通性检查。
+Use the existing VPS SSH configuration and trusted host keys. The VPS repo's
+local Git config contains `stemseparator.sshHost` and `stemseparator.remoteRoot`.
+Run this bounded connectivity check from the VPS checkout when needed.
 
 ```bash
 polyu_host=$(git config --local --get stemseparator.sshHost) &&
@@ -12,25 +12,39 @@ ssh -T -F "$HOME/.ssh/config" -o BatchMode=yes -o StrictHostKeyChecking=yes \
   -o UpdateHostKeys=no -o ForwardAgent=no -- "$polyu_host" 'hostname; id -un'
 ```
 
-沿用现有 SSH 隧道、主机密钥记录、账号、私钥和系统配置。主机密钥异常时停止连接，
-由管理员通过可信渠道核对。密钥、认证文件、内部连接参数和敏感环境变量留在主机本地，
-仅在日志和 Git 中记录任务所需的非敏感信息。SSH 命令以远程账号的权限执行，VPS
-沙箱的文件限制只覆盖 VPS。
+Preserve the tunnel, SSH identity, host key records, authorized keys, account
+permissions, system services, and local sandbox settings. Stop on a host key
+failure and have the administrator verify it through a trusted channel. Keep
+authentication material and sensitive environment data out of commands, logs,
+and the repository. The remote account's permissions apply on PolyU. The VPS
+workspace sandbox applies on the VPS.
 
-## 授权和路径
+## Authorization and preservation
 
-1. 初始调查使用有界的只读命令，核对身份、工作树、挂载点和必要的环境信息。检查程序
-   可能产生的字节码、日志、临时文件、模型下载、缓存和子进程写入。
-2. 创建、安装、修改、移动或删除前列出绝对目标、辅助写入、影响范围和预期结果，
-   按用户已明确授权的范围执行。范围有变化时，先确认新增操作。执行与存储政策中的
-   目录分工只定义文件归属。
-3. 确认目标的真实路径和归属，使用独立的测试或运行输出。遇到符号链接、已有同名
-   输出、目标不明或意外写入时停止该操作，保留现状和失败记录。
-4. 递归删除、覆盖现有资产、强制重置、清理未跟踪文件、使用 `sudo`、调整权限或改动
-   系统与 SSH 配置，均需针对该操作的明确授权。
+1. Start with bounded read-only investigation. Check the host and account,
+   actual checkout, mount, symlinks, pending Git state, and relevant capacity.
+2. For writes, identify exact absolute paths, auxiliary writes, scope, and
+   expected outcome. Work within explicit user authorization. Confirm scope
+   changes separately. Directory placement and read access authorize no writes.
+3. Inspect entry points, imports, subprocesses, loader behavior, caches,
+   bytecode, temp files, and log redirects. Reject unexpected symlinks, same-name
+   outputs, ambiguous ownership, and unexpected writes. Preserve partials and
+   protect original audio, accepted runs, models, and archives.
+4. Recursive deletion, bulk overwrite, forced resets, `git clean`, destructive
+   `rsync`, database changes, `sudo`, permissions, and system or SSH changes
+   require authorization for the specific operation.
 
-## 分轨运行
+## Execution and network acquisition
 
-从 PolyU 工作树调用该项目的 `.venv/bin/python`。运行前记录 Git 提交及待提交状态、
-命令、参数、输入与输出路径。开始长任务前说明日志位置、状态检查和停止方式，结束后
-记录退出状态并回读输出。先确认模型下载目标、来源和空间，再运行首次模型下载。
+Use the absolute project interpreter and an approved run location. Record the
+commands, inputs, code identity, outputs, and exit status. Before a long run,
+identify the process, log location, progress check, and targeted stop method.
+Use the [run closeout procedure](execution-and-storage-policy.md#run-and-archive)
+to verify completion. Leave GPU thermal management to the driver and hardware.
+
+Verify package or model sources, expected bytes and available space, and each
+redirect destination before fetching. Restrict acquisitions to approved public
+endpoints. The configured SSH endpoint is reserved for SSH control. Use a bounded
+retry and storage budget, and a small approved pilot before any bulk transfer.
+Check hashes against trusted records where available. Preserve partials and
+failures until their disposition is authorized.

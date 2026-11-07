@@ -1,20 +1,44 @@
-# 执行与存储政策
+# Execution and storage policy
 
-| 位置 | 职责与内容 |
+| Location | Work and materials |
 | --- | --- |
-| VPS `~/Developer/StemSeparator` | Git 工作树、文档维护、项目管理、Git 审阅与同步、SSH 控制。可保留待提交的 Git 内容。 |
-| PolyU 的 `StemSeparator` 工作树 | 代码开发、依赖安装、测试、音频分轨。项目 `.venv/`、`.runtime/`、`.cache/`、`.work/`、`outputs/`、本机配置与模型权重留在此处。 |
-| PolyU 上经授权的外部音频库 | 原始音乐。用 `--input-file` 或本机 `config/local.toml` 指定输入，分轨只读原音频。 |
-| GitHub `origin` | 两端共享的版本记录，包括源码、文档、依赖声明、配置模板、模型配置和小型来源记录。 |
+| VPS `~/Developer/StemSeparator` | Git-managed source, docs, dependency declarations, model metadata, compact receipts, pending Git changes, and SSH control |
+| PolyU project checkout | Code development, runtime installation, tests, separation, local configuration, models, caches, logs, workspaces, and outputs |
+| Authorized audio library | Original mixes, read as input to the project |
+| Shared GitHub `origin` | Versioned code, docs, dependency declarations, model metadata, and compact nonsensitive evidence |
 
-PolyU 的实际工作树绝对路径保存在 VPS 的 `stemseparator.remoteRoot` 仓库本地 Git
-配置中。执行环境使用该工作树内独立的 `.venv/bin/python`，环境初始化见
-[PolyU 交接说明](../POLYU_HANDOFF.md)。旧 Windows 环境按 Linux 的依赖重建。
+The VPS checkout's local Git config records the PolyU project root. Use the
+project's absolute `.venv/bin/python` path on PolyU. Read the
+[remote execution policy](remote-execution-policy.md) before any remote action.
+Use the [development guide](../operations/polyu-development.md) to synchronize Git.
 
-开始时核对 Git 状态、实际主机和绝对路径，保留两端待提交的改动。需要迁移既有资产时，
-先列出明确的源、目的地、大小与校验值，经授权后按清单传输并回读验证。资产清理需单独
-授权，Git 忽略规则只决定版本管理边界。
+## Run and archive
 
-任务结束时确认退出状态与实际输出，检查两端已跟踪、未跟踪和忽略内容的归属。
-开发或运行产生的本机文件留在 PolyU。需要同步时核对两端 `HEAD` 和 GitHub 分支提交，
-并保留有意留在任一端的工作中改动。
+1. Choose a run ID, an authorized workspace under `.work/runs/<topic>/<task>/<run-id>/`,
+   and a final archive under `.work/archive/<topic>/<task>/<run-id>/` before a
+   new validation or multi-step task. Use an explicitly authorized output
+   directory for normal separation. Record inputs, writable paths, code
+   identity and pending changes, commands, limits, and how to stop the run.
+2. Keep logs, executed snapshots, temporary files, failures, and partial
+   outputs within the approved PolyU scope. Preserve protected inputs, weights,
+   accepted outputs, and archives. Allocate a fresh run path for a retry.
+3. Verify terminal process status and read back expected outputs. Record which
+   checks passed and which work remains. Close writers before archival and use
+   a no-replace move, followed by independent readback. Keep failed attempts
+   with their own results. Update the owning guide with a compact outcome.
+
+## Git and transfer boundaries
+
+Git tracks maintained code under `src/`, model configuration and manifests,
+docs, dependency declarations, and compact records. Environments, local TOML,
+audio, weights, full runs, and credentials stay in their approved local paths.
+Keep `core.hooksPath=.githooks` and inspect the staged diff before a commit.
+
+For a migration, inventory exact source paths, sizes, and hashes. Transfer only
+the authorized inventory into absent destinations and independently read back
+the destination bytes. Source removal requires its own authorization and a
+check that the original bytes still match. Git exclusion and reconstructability
+establish file classification. Deletion requires separate authorization.
+
+At closeout, inspect tracked, untracked, and ignored content and retain pending
+Git work. Compare both checkouts with the GitHub branch for synchronized changes.

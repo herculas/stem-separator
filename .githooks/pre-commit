@@ -7,7 +7,8 @@ git diff --cached --raw --no-abbrev --no-renames --diff-filter=ACMT -z |
         lower="${path,,}"
         case "/$lower" in
             */.venv/*|*/.runtime/*|*/.cache/*|*/.work/*|*/outputs/*|*/__pycache__/*|*/config/local.toml|\
-            *.ckpt|*.pth|*.pt|*.onnx|*.safetensors|*.wav|*.flac|*.m4a|*.mp3|*.aac|*.ogg)
+            *.ckpt|*.pth|*.pt|*.onnx|*.safetensors|*.wav|*.flac|*.m4a|*.mp3|*.aac|*.ogg|\
+            *.zip|*.tar|*.gz|*.7z|*.db|*.sqlite|*.sqlite3|*.duckdb|*.parquet)
                 printf 'Staged runtime data or machine-specific configuration: %s\n' "$path" >&2
                 exit 1
                 ;;
@@ -20,6 +21,21 @@ git diff --cached --raw --no-abbrev --no-renames --diff-filter=ACMT -z |
                     printf 'Staged possible credential file: %s\n' "$path" >&2
                     exit 1
                 fi
+                ;;
+        esac
+        case "$lower" in
+            *.md)
+                if [[ "$path" != README.md && "$path" != AGENTS.md &&
+                      ! "$path" =~ ^docs/([a-z0-9]+(-[a-z0-9]+)*/)*([a-z0-9]+(-[a-z0-9]+)*\.md|README\.md|AGENTS\.md)$ ]]; then
+                    printf 'Use an approved documentation path and filename: %s\n' "$path" >&2
+                    exit 1
+                fi
+                ;;
+            *.py|*.sh|*.ps1|*.ipynb)
+                case "$path" in
+                    src/*|.githooks/*) ;;
+                    *) printf 'Keep maintained code under src/: %s\n' "$path" >&2; exit 1 ;;
+                esac
                 ;;
         esac
         read -r old_mode new_mode old_blob new_blob change_kind <<< "$header"
