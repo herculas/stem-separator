@@ -6,7 +6,7 @@ git diff --cached --raw --no-abbrev --no-renames --diff-filter=ACMT -z |
     while IFS= read -r -d '' header && IFS= read -r -d '' path; do
         lower="${path,,}"
         case "/$lower" in
-            */.venv/*|*/.runtime/*|*/.cache/*|*/.work/*|*/outputs/*|*/__pycache__/*|*/config/local.toml|\
+            */.venv/*|*/.runtime/*|*/.cache/*|*/.work/*|/work/*|*/outputs/*|*/__pycache__/*|*/config/local.toml|\
             *.ckpt|*.pth|*.pt|*.onnx|*.safetensors|*.wav|*.flac|*.m4a|*.mp3|*.aac|*.ogg|\
             *.zip|*.tar|*.gz|*.7z|*.db|*.sqlite|*.sqlite3|*.duckdb|*.parquet)
                 printf 'Staged runtime data or machine-specific configuration: %s\n' "$path" >&2

@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import tomllib
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -15,7 +16,9 @@ import imageio_ffmpeg
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG = PROJECT_ROOT / "config" / "local.toml"
-DEFAULT_MODEL = "roformer-model-bs-roformer-sw-by-jarredou"
+MODEL_ROOT = PROJECT_ROOT / "models"
+MODEL_DIR = MODEL_ROOT / "bs-roformer-sw"
+UPSTREAM_MODEL = "roformer-model-bs-roformer-sw-by-jarredou"
 
 
 def parse_args() -> argparse.Namespace:
@@ -62,14 +65,38 @@ def resolve_source(args: argparse.Namespace) -> Path:
     return source
 
 
+def resolve_model_assets() -> tuple[Path, Path]:
+    checkpoint = MODEL_DIR / "BS-Rofo-SW-Fixed.ckpt"
+    config = MODEL_DIR / "BS-Rofo-SW-Fixed.yaml"
+    if checkpoint.is_file() and config.is_file():
+        return checkpoint, config
+
+    # Existing checkouts can still have the weight at the upstream registry path.
+    legacy_dir = MODEL_ROOT / UPSTREAM_MODEL
+    legacy_checkpoint = legacy_dir / checkpoint.name
+    legacy_config = legacy_dir / config.name
+    if not checkpoint.exists() and legacy_checkpoint.is_file():
+        if config.is_file():
+            return legacy_checkpoint, config
+        if legacy_config.is_file():
+            return legacy_checkpoint, legacy_config
+
+    from bs_roformer.download import download_model_assets
+    from bs_roformer.model_registry import MODEL_REGISTRY
+
+    model = replace(MODEL_REGISTRY.get(UPSTREAM_MODEL), slug=MODEL_DIR.name)
+    if not download_model_assets([model], MODEL_ROOT):
+        raise OSError(f"Could not prepare model files under {MODEL_DIR}")
+    return checkpoint, config
+
+
 def run(args: argparse.Namespace) -> Path:
     source = resolve_source(args)
-    models_dir = PROJECT_ROOT / "models"
     output_root = (args.output_root or PROJECT_ROOT / "outputs" / "6-stem").expanduser().resolve()
     track_output = output_root / source.stem
     track_output.mkdir(parents=True)
 
-    work_root = PROJECT_ROOT / ".work" / "bs-roformer"
+    work_root = PROJECT_ROOT / "work" / "scratch" / "bs-roformer"
     work_root.mkdir(parents=True, exist_ok=True)
     work_dir = Path(tempfile.mkdtemp(dir=work_root))
     decoded_wav = work_dir / f"{source.stem}.wav"
@@ -100,14 +127,15 @@ def run(args: argparse.Namespace) -> Path:
     )
 
     print(f"Separating on device: {args.device}", flush=True)
+    checkpoint, config = resolve_model_assets()
     command = [
         sys.executable,
         "-c",
         "from bs_roformer.inference import main; main()",
-        "--model",
-        DEFAULT_MODEL,
-        "--models_dir",
-        str(models_dir),
+        "--model_path",
+        str(checkpoint),
+        "--config_path",
+        str(config),
         "--input_folder",
         str(work_dir),
         "--store_dir",

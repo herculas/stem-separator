@@ -65,11 +65,11 @@ def run(args: argparse.Namespace) -> Path:
     consistent_output = track_output / "consistent_stems"
     partition_script = Path(__file__).with_name("partition_other.py")
 
-    work_root = PROJECT_ROOT / ".work" / "experiments" / "other-refinement"
+    work_root = PROJECT_ROOT / "work" / "scratch" / "other-refinement"
     work_root.mkdir(parents=True, exist_ok=True)
     work_dir = Path(tempfile.mkdtemp(dir=work_root))
     decoded_wav = work_dir / f"{source.stem}.wav"
-    mpl_config = PROJECT_ROOT / ".work" / "matplotlib"
+    mpl_config = PROJECT_ROOT / ".runtime" / "cache" / "matplotlib"
     mpl_config.mkdir(parents=True, exist_ok=True)
 
     environment = os.environ.copy()
