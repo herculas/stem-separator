@@ -16,7 +16,7 @@ misclassification limited its value as a replacement for the six-stem result.
 - [Mask projection](../../src/other_refinement/partition_other.py)
 - [Format and reconstruction verifier](../../src/other_refinement/verify_other_refinement.py)
 - [Model manifest](../../models/experimental/mvsep-mega-53/manifest.json)
-- [Experimental dependencies](../../requirements-experimental.txt)
+- [Experimental dependencies](../../requirements/experimental.txt)
 
 The historical run used MSST, local specialist checkpoints, and NVIDIA CUDA.
 It first generated the standard six-stem result for the same source, then ran

@@ -8,24 +8,18 @@
 | Shared GitHub `origin` | Versioned code, docs, dependency declarations, model metadata, and compact nonsensitive evidence |
 
 The VPS checkout's local Git config records the PolyU project root. Use the
-project's absolute `.venv/bin/python` path on PolyU. Read the
+project's absolute `.runtime/venv/bin/python` path on PolyU. Read the
 [remote execution policy](remote-execution-policy.md) before any remote action.
 Use the [development guide](../operations/polyu-development.md) to synchronize Git.
 
 ## Run and archive
 
-1. Choose a run ID, an authorized workspace under `.work/runs/<topic>/<task>/<run-id>/`,
-   and a final archive under `.work/archive/<topic>/<task>/<run-id>/` before a
-   new validation or multi-step task. Use an explicitly authorized output
-   directory for normal separation. Record inputs, writable paths, code
-   identity and pending changes, commands, limits, and how to stop the run.
-2. Keep logs, executed snapshots, temporary files, failures, and partial
-   outputs within the approved PolyU scope. Preserve protected inputs, weights,
-   accepted outputs, and archives. Allocate a fresh run path for a retry.
-3. Verify terminal process status and read back expected outputs. Record which
-   checks passed and which work remains. Close writers before archival and use
-   a no-replace move, followed by independent readback. Keep failed attempts
-   with their own results. Update the owning guide with a compact outcome.
+Use the [work directory procedure](../operations/work-layout.md) for new
+validations and multi-step runs. Choose the authorized workspace and final
+archive before execution. Keep logs, source snapshots, temporary files,
+failures, and partials within the approved scope. Use an explicitly authorized
+output directory for normal separation. Protect original inputs, weights,
+accepted results, and sealed archives.
 
 ## Git and transfer boundaries
 

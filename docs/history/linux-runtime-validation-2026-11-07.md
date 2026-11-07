@@ -3,7 +3,7 @@
 On 2026-11-07, PolyU validated the x86-64 Linux environment for commit
 [`1dbd448`](https://github.com/herculas/stem-separator/commit/1dbd448de9c33bfc05864d7758ba0b740c35bc13).
 Python 3.12.15 ran PyTorch `2.9.0+cu128` on an NVIDIA RTX PRO 6000 Blackwell.
-The [dependency lock](../../requirements-linux-cu128.txt) matched all 45
+The [dependency lock](../../requirements/linux-cu128.txt) matched all 45
 installed packages, and `uv pip check` passed.
 
 | Check | Result |
@@ -15,7 +15,7 @@ installed packages, and `uv pip check` passed.
 
 The [development guide](../operations/polyu-development.md) owns the current
 runtime procedure. The checkpoint and fixtures are isolated in the PolyU run
-archive under `.work/archive/runtime/linux-bootstrap/2026-11-07/`. At bootstrap
+archive under `work/archive/runtime/linux-bootstrap/2026-11-07/`. At bootstrap
 closeout the checkpoint was present only in the archive. The
 [separation guide](../operations/separation.md#checkpoint-and-output) records
 its subsequent deployment to the standard model directory.

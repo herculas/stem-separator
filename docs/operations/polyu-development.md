@@ -23,29 +23,29 @@ SSH. From the VPS checkout, read the destination with
 ## Provision Linux
 
 The PolyU baseline is x86-64 Linux, Python 3.12.15, and PyTorch 2.9.0 with
-CUDA 12.8. [The Linux dependency lock](../../requirements-linux-cu128.txt)
-captures the resolved versions. [Main requirements](../../requirements.txt)
+CUDA 12.8. [The Linux dependency lock](../../requirements/linux-cu128.txt)
+captures the resolved versions. [Main requirements](../../requirements/base.txt)
 declare the portable top-level dependencies. Use the existing `uv` executable.
 If it is outside `PATH` in a noninteractive session, use its verified absolute
 path. Check the [storage policy](../governance/execution-and-storage-policy.md)
-and the status of any existing `.venv` before provisioning. The commands below
+and the status of any existing `.runtime/venv/` before provisioning. The commands below
 assume a fresh, authorized environment and run from the PolyU project root.
 
 ```bash
 project_root=$(pwd -P)
 export UV_PYTHON_INSTALL_DIR="$project_root/.runtime/python"
-export UV_CACHE_DIR="$project_root/.cache/uv"
+export UV_CACHE_DIR="$project_root/.runtime/cache/uv"
 export UV_PYTHON_CACHE_DIR="$UV_CACHE_DIR/python"
-export XDG_CACHE_HOME="$project_root/.cache"
-export TMPDIR="$project_root/.work/tmp"
+export XDG_CACHE_HOME="$project_root/.runtime/cache"
+export TMPDIR="$project_root/work/scratch/tmp"
 mkdir -p -- "$TMPDIR"
 
-uv --no-config venv --no-project --managed-python --python 3.12.15 .venv
-python="$project_root/.venv/bin/python"
-uv --no-config pip install --python "$python" -c requirements-linux-cu128.txt \
+uv --no-config venv --no-project --managed-python --python 3.12.15 .runtime/venv
+python="$project_root/.runtime/venv/bin/python"
+uv --no-config pip install --python "$python" -c requirements/linux-cu128.txt \
   --index-url https://download.pytorch.org/whl/cu128 'torch==2.9.0+cu128'
-uv --no-config pip install --python "$python" -c requirements-linux-cu128.txt \
-  --index-url https://pypi.org/simple -r requirements.txt 'torch==2.9.0+cu128'
+uv --no-config pip install --python "$python" -c requirements/linux-cu128.txt \
+  --index-url https://pypi.org/simple -r requirements/base.txt 'torch==2.9.0+cu128'
 uv --no-config pip check --python "$python"
 ```
 
@@ -54,6 +54,14 @@ PyTorch publishes the matching wheel on its CUDA 12.8 index.
 and [uv storage settings](https://docs.astral.sh/uv/reference/storage/) document
 the package source and local storage controls.
 
+Keep the base interpreter under `.runtime/python/`, installed dependencies in
+`.runtime/venv/`, and package and compiler caches under `.runtime/cache/`.
+The active virtual environment was rebuilt in place at its new path using the
+existing `uv` cache and dependency lock. The previous root-level environment is
+preserved at `.runtime/retired/venv-2026-11-08/` as a rollback copy. Its launchers
+still use the original path. A rollback requires an authorized restoration to
+that path and runtime validation before use.
+
 ## Validate the environment
 
 Set the cache paths within the authorized project scope before invoking CUDA.
@@ -61,8 +69,8 @@ Compare `uv pip freeze --python "$python"` with the Linux dependency lock and
 verify the bundled FFmpeg executable and SoundFile imports.
 
 ```bash
-export CUDA_CACHE_PATH="$project_root/.cache/cuda"
-export TRITON_CACHE_DIR="$project_root/.cache/triton"
+export CUDA_CACHE_PATH="$project_root/.runtime/cache/cuda"
+export TRITON_CACHE_DIR="$project_root/.runtime/cache/triton"
 export PYTHONDONTWRITEBYTECODE=1
 "$python" -B -c 'import torch; print(torch.__version__, torch.version.cuda); print(torch.ones(1, device="cuda").item())'
 "$python" -B src/run_bs_roformer.py --help

@@ -9,6 +9,8 @@ first. Choose the owning guide before changing code, documents, or run settings.
   the Linux environment, and runtime verification.
 - [Separation](operations/separation.md) covers model preparation, command-line
   arguments, local settings, and output validation.
+- [Work directory](operations/work-layout.md) covers run IDs, scratch space,
+  archive verification, and retention.
 
 ## Governance
 

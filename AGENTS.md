@@ -7,6 +7,7 @@ Inspect `git status --short --branch` and preserve existing changes.
 | --- | --- |
 | Any PolyU access or operation | [Remote execution policy](docs/governance/remote-execution-policy.md) |
 | Choosing a write location, testing, migrating assets, or closing a run | [Execution and storage policy](docs/governance/execution-and-storage-policy.md) |
+| Creating, resuming, or archiving a run in `work/` | [Work directory](docs/operations/work-layout.md) |
 | Creating, retiring, or moving a document | [Documentation policy](docs/governance/documentation-policy.md) |
 | Setting up Linux or synchronizing checkouts | [PolyU development](docs/operations/polyu-development.md) |
 | Running separation or changing local settings | [Separation guide](docs/operations/separation.md) |

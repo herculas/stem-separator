@@ -33,9 +33,12 @@ with `python` set to its absolute interpreter path.
 
 ## Checkpoint and output
 
-The tracked [model config](../../models/roformer-model-bs-roformer-sw-by-jarredou/BS-Rofo-SW-Fixed.yaml)
-pairs with the Git-ignored `BS-Rofo-SW-Fixed.ckpt` in the same directory. The
-first run can fetch the missing checkpoint through `bs-roformer-infer`.
+The tracked [model config](../../models/bs-roformer-sw/BS-Rofo-SW-Fixed.yaml)
+pairs with the Git-ignored `BS-Rofo-SW-Fixed.ckpt` in `models/bs-roformer-sw/`.
+The runner passes both paths to `bs-roformer-infer`. It can read an existing
+weight at the previous registry-based path during migration. When a checkpoint
+is missing, the upstream downloader uses the original model identity and
+stores the new asset under the shorter path.
 Before authorizing a fetch, verify the source, redirects, space, and SHA-256
 against the [upstream release record](https://pypi.org/project/bs-roformer-infer/0.1.5/).
 Apply the same checks when placing an existing copy. The published checkpoint
@@ -46,11 +49,12 @@ On 2026-11-07, PolyU deployed a verified copy from the
 The CUDA runner loaded the checkpoint from the default model directory and
 produced all seven WAVs from synthetic audio with IPv4 and IPv6 socket creation
 blocked. The PolyU run record is under
-`.work/archive/runtime/local-checkpoint/2026-11-07/`.
+`work/archive/runtime/local-checkpoint/2026-11-07/`. See the
+[migration map](work-layout.md#historical-paths) for paths in archived logs.
 
 `--device cuda` selects the NVIDIA GPU. The default `auto` delegates device
 selection to the inference package. The CLI also accepts `cpu` and `mps`.
-FFmpeg decodes to 44.1 kHz stereo. Decodes live under `.work/bs-roformer/` and
+FFmpeg decodes to 44.1 kHz stereo. Decodes live under `work/scratch/bs-roformer/` and
 are removed on successful runs unless `--keep-decoded-wav` is set. The input
 file is read-only. Results go under `outputs/6-stem/<track-stem>/` by default.
 The runner refuses an existing track directory. For a retry, use
