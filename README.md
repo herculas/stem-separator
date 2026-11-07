@@ -1,4 +1,4 @@
-# Sonic
+# StemSeparator
 
 跨平台的本地音乐分轨与分析工作区。当前主流程使用 **BS-RoFormer-SW
 6-stem**，生成 `bass`、`drums`、`guitar`、`piano`、`vocals`、`other`
@@ -7,9 +7,14 @@
 所有可执行代码统一位于 `src/`。53-stem 精细化方案保留在
 `src/other_refinement/`，但由于串音与误分类较明显，不属于日常流程。
 
+项目开发、测试和分轨在 PolyU 上进行。VPS 保留 Git 工作树，用于文档维护、
+项目管理与远程控制。两端通过同一个 GitHub `origin` 同步。操作入口见
+[项目指引](AGENTS.md)和 [PolyU 交接说明](docs/POLYU_HANDOFF.md)。
+
 ## 快速开始
 
-Python 3.12 环境安装：
+在 PolyU 上按交接说明准备 Python 3.12 和 CUDA。独立的 macOS 或 Windows
+工作站可使用下面的通用流程。
 
 ```shell
 python3 -m venv .venv
@@ -41,17 +46,18 @@ python src/run_bs_roformer.py --track "track.flac"
 ## 目录
 
 ```text
-sonic/
+StemSeparator/
 ├── src/                            全部可执行代码
 │   ├── run_bs_roformer.py          当前 6-stem 主流程
 │   └── other_refinement/           已归档的 53-stem 实验代码
 ├── config/                         跨平台本机配置模板
-├── docs/                           项目说明、实验记录与交接文档
+├── docs/                           项目说明、实验记录、交接文档和远程操作政策
 ├── models/                         模型配置与本地权重
+├── .githooks/                      Git 提交边界检查
 ├── outputs/                        生成结果（Git 忽略）
 ├── .venv/                          本机 Python 环境（Git 忽略）
 └── .work/                          解码缓存（Git 忽略）
 ```
 
-环境与行为说明见 [项目文档](docs/PROJECT.md)，迁移至 macOS 前请阅读
-[Mac 交接说明](docs/MAC_HANDOFF.md)。
+运行行为见[项目说明](docs/PROJECT.md)。Windows 验证记录和
+[Mac 交接说明](docs/MAC_HANDOFF.md)保留供对应平台使用。

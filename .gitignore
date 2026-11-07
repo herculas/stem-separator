@@ -1,11 +1,17 @@
 # Local runtime and caches
 .venv/
+.runtime/
+.cache/
 .work/
 **/__pycache__/
 *.py[cod]
 
 # Machine-specific configuration
 config/local.toml
+.ssh/
+.env
+.env.*
+!.env.example
 
 # Generated audio and analysis results
 outputs/

@@ -33,6 +33,9 @@
 
 ## 安装
 
+当前项目在 PolyU 开发。Linux 初始化和验收步骤见
+[PolyU 交接说明](POLYU_HANDOFF.md)。以下保留 Windows 和 macOS 的安装方法。
+
 在项目根目录创建虚拟环境。虚拟环境包含平台和绝对路径信息，换机器或操作系统时
 必须重建，不能直接复制。
 
@@ -90,7 +93,7 @@ Git 跟踪：
 
 Git 忽略：
 
-- `.venv/` 与 `.work/`
+- `.venv/`、`.runtime/`、`.cache/` 与 `.work/`
 - `outputs/` 下的所有分轨结果
 - checkpoint 等大型模型权重
 - `config/local.toml`

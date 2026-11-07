@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Inspect the index so partial staging and unusual filenames are handled correctly.
+git diff --cached --raw --no-abbrev --no-renames --diff-filter=ACMT -z |
+    while IFS= read -r -d '' header && IFS= read -r -d '' path; do
+        lower="${path,,}"
+        case "/$lower" in
+            */.venv/*|*/.runtime/*|*/.cache/*|*/.work/*|*/outputs/*|*/__pycache__/*|*/config/local.toml|\
+            *.ckpt|*.pth|*.pt|*.onnx|*.safetensors|*.wav|*.flac|*.m4a|*.mp3|*.aac|*.ogg)
+                printf 'Staged runtime data or machine-specific configuration: %s\n' "$path" >&2
+                exit 1
+                ;;
+            */.ssh/*|*.pem|*.key|*.p12|*.pfx|*/id_ed25519|*/id_rsa|*/id_ecdsa|*/id_dsa)
+                printf 'Staged possible credential file: %s\n' "$path" >&2
+                exit 1
+                ;;
+            */.env|*/.env.*)
+                if [ "${lower##*/}" != .env.example ]; then
+                    printf 'Staged possible credential file: %s\n' "$path" >&2
+                    exit 1
+                fi
+                ;;
+        esac
+        read -r old_mode new_mode old_blob new_blob change_kind <<< "$header"
+        printf '%s\n' "$new_blob"
+    done |
+    git cat-file --batch-check='%(objectname) %(objecttype) %(objectsize)' |
+    awk '
+        NF != 3 || $2 != "blob" || $3 !~ /^[0-9]+$/ || $3 > 26214400 {
+            print "Invalid or oversized staged object (25 MiB limit): " $0 > "/dev/stderr"
+            failed = 1
+        }
+        END { exit failed ? 1 : 0 }
+    '
